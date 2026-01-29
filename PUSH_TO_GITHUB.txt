@@ -1,17 +1,19 @@
 Как отправить проект на GitHub
 ================================
 
-1. Создайте новый репозиторий на https://github.com/new
-   - Имя, например: patch-cord-calculator
-   - Без README, без .gitignore (всё уже есть в проекте)
+Способ 1 — скрипт с токеном (рекомендуется)
+-------------------------------------------
+1. Создайте токен: https://github.com/settings/tokens
+   - "Generate new token (classic)", scope: repo.
+2. Запустите:   запустить_гитхаб.bat
+   Или:         powershell -ExecutionPolicy Bypass -File upload_with_token.ps1
+3. Вставьте токен по запросу. Скрипт создаст репо patch-cord-calculator и запушит код.
 
-2. В папке проекта выполните (подставьте свой логин и имя репо):
-
+Способ 2 — вручную
+------------------
+1. Создайте репозиторий на https://github.com/new
+   Имя: patch-cord-calculator. Без README, без .gitignore.
+2. В папке проекта:
    git remote add origin https://github.com/VASH_LOGIN/patch-cord-calculator.git
    git push -u origin main
-
-   Если репозиторий уже есть по другому URL — просто вставьте его вместо ссылки выше.
-
-3. При первом push Git может запросить логин и пароль.
-   Пароль: используйте Personal Access Token (Settings → Developer settings → Personal access tokens),
-   не обычный пароль от аккаунта.
+3. Пароль = Personal Access Token (не пароль от аккаунта).
