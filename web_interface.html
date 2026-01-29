@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор длины патч-кордов</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            border-radius: 0;
+            box-shadow: none;
+            padding: 20px 32px 24px;
+            width: 100%;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 4px;
+            font-size: 22px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 16px;
+            font-size: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .server-section {
+            background: #f8f9fa;
+            padding: 14px 16px;
+            border-radius: 10px;
+            margin-bottom: 14px;
+        }
+
+        .server-section h2 {
+            font-size: 15px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .settings-header {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .title-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .settings-toggle {
+            border: none;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+            width: auto;          /* не растягиваем на всю ширину */
+            min-width: 0;
+        }
+
+        .settings-toggle span {
+            display: none; /* скрываем текст 'Настройки' */
+        }
+
+        .settings-toggle:hover {
+            background: #f3f4ff;
+        }
+
+        .config-panel {
+            background: #fff3cd;
+            padding: 14px 16px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            border: 1px solid #ffc107;
+            display: none;
+        }
+
+        .config-panel.open {
+            display: block;
+        }
+
+        .config-panel h3 {
+            font-size: 14px;
+            color: #856404;
+            margin-bottom: 12px;
+        }
+
+        .config-panel label {
+            font-size: 13px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            margin-top: 18px;
+            padding: 18px 16px 16px;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            border-radius: 12px;
+            color: white;
+            text-align: center;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .result-value {
+            font-size: 26px;
+            font-weight: bold;
+            margin: 10px 0 5px;
+        }
+
+        .result-details {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .segments {
+            margin-top: 14px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 999px;
+            padding: 8px;
+        }
+
+        .segments-bar {
+            display: flex;
+            height: 22px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+            color: #fff;
+        }
+
+        .segment-vertical-a {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .segment-horizontal {
+            background: rgba(0, 0, 0, 0.25);
+        }
+
+        .segment-vertical-b {
+            background: rgba(255, 255, 255, 0.35);
+        }
+
+        .segments-legend {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-top: 6px;
+            font-size: 11px;
+            text-align: left;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 3px 0;
+            gap: 6px;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 4px;
+        }
+
+        .legend-vertical-a {
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        .legend-horizontal {
+            background: rgba(0, 0, 0, 0.45);
+        }
+
+        .legend-vertical-b {
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .result-meta {
+            margin-top: 6px;
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .rack-viz {
+            margin-top: 10px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+            padding: 12px;
+            overflow: hidden;
+        }
+
+        .rack-viz-title {
+            font-size: 12px;
+            opacity: 0.95;
+            margin-bottom: 8px;
+            text-align: left;
+        }
+
+        .rack-viz svg {
+            width: 100%;
+            height: 220px;
+            display: block;
+        }
+
+        .layout-main {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .layout-left {
+            flex: 0 0 48%;
+        }
+
+        .layout-right {
+            flex: 0 0 52%;
+        }
+
+        @media (max-width: 900px) {
+            .layout-main {
+                flex-direction: column;
+            }
+
+            .layout-left,
+            .layout-right {
+                flex: 1 1 100%;
+            }
+        }
+
+        select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #fff;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="settings-header">
+            <div class="title-row">
+                <h1>🔌 Калькулятор патч-кордов</h1>
+                <button type="button" class="settings-toggle" id="settingsToggle">
+                    ⚙️ <span>Настройки</span>
+                </button>
+            </div>
+            <p class="subtitle">Расчёт длины кабеля для коммутации серверов в дата-центре</p>
+        </div>
+
+        <div class="layout-main">
+            <div class="layout-left">
+                <form id="calculatorForm">
+                    <div class="server-section">
+                        <h2>Сервер A</h2>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="rack1">Стойка (только 02b03–02b18)</label>
+                                <select id="rack1" name="rack1" required>
+                                    <option value="">Выберите стойку</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="unit1">Номер юнита (1-50)</label>
+                                <input type="number" id="unit1" name="unit1" min="1" max="50" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="hostname1">Хостнейм (опционально)</label>
+                                <input type="text" id="hostname1" name="hostname1" placeholder="например, msk-f1111">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="server-section">
+                        <h2>Сервер B</h2>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="rack2">Стойка (только 02b03–02b18)</label>
+                                <select id="rack2" name="rack2" required>
+                                    <option value="">Выберите стойку</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="unit2">Номер юнита (1-50)</label>
+                                <input type="number" id="unit2" name="unit2" min="1" max="50" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="hostname2">Хостнейм (опционально)</label>
+                                <input type="text" id="hostname2" name="hostname2" placeholder="например, msk-f123">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="config-panel" id="settingsPanel">
+                        <h3>Дополнительные настройки</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="slack">Запас между стойками (м)</label>
+                                <input type="number" id="slack" name="slack" min="0" step="0.1" value="0.5">
+                            </div>
+                            <div class="form-group">
+                                <label for="rounding">Шаг округления (м)</label>
+                                <input type="number" id="rounding" name="rounding" min="0.1" step="0.1" value="0.5">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit">Рассчитать длину</button>
+                </form>
+            </div>
+
+            <div class="layout-right">
+                <div id="result" class="result">
+                    <h3>Результат расчёта</h3>
+                    <div class="result-value" id="resultValue">0.00 м</div>
+                    <div class="result-details" id="resultDetails"></div>
+                    <div class="segments" id="segmentsContainer" style="display: none;">
+                        <div class="segments-bar" id="segmentsBar">
+                            <!-- Сегменты заполняются динамически -->
+                        </div>
+                        <div class="segments-legend">
+                            <div class="legend-item">
+                                <div class="legend-color legend-vertical-a"></div>
+                                <span>Вертикаль от сервера A до лотка</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color legend-horizontal"></div>
+                                <span>Горизонталь по кабель-каналу</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color legend-vertical-b"></div>
+                                <span>Вертикаль от сервера B до лотка</span>
+                            </div>
+                        </div>
+                        <div class="result-meta" id="resultMeta"></div>
+
+                        <!-- Визуализация маршрута кабеля (как на схеме) -->
+                        <div class="rack-viz" id="rackVizContainer" style="display: none;">
+                            <div class="rack-viz-title" id="rackVizTitle"></div>
+                            <svg id="rackViz" viewBox="0 0 760 420" xmlns="http://www.w3.org/2000/svg" aria-label="Rack cable visualization" role="img">
+                                <!-- SVG заполняется динамически -->
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = "http://localhost:8000";
+        const MAX_UNIT = 50; // В нашей модели 1..50
+
+        async function loadRacks() {
+            try {
+                const res = await fetch(`${API_BASE}/racks`);
+                if (!res.ok) throw new Error("Ошибка загрузки списка стоек");
+                const data = await res.json();
+
+                const rackSelects = [
+                    document.getElementById("rack1"),
+                    document.getElementById("rack2"),
+                ];
+
+                data.racks.forEach((rack) => {
+                    rackSelects.forEach((select) => {
+                        const option = document.createElement("option");
+                        option.value = rack.code;
+                        option.textContent = rack.code; // без "позиция N", чтобы список был короче
+                        select.appendChild(option);
+                    });
+                });
+            } catch (err) {
+                console.error(err);
+                alert("Не удалось загрузить план стоек. Проверьте, что API /racks запущен.");
+            }
+        }
+
+        function updateSegmentsVisualization(breakdown) {
+            const { vertical_a_m, vertical_b_m, horizontal_m, raw_total_m, slack_added_m, same_rack } =
+                breakdown;
+
+            const segmentsContainer = document.getElementById("segmentsContainer");
+            const segmentsBar = document.getElementById("segmentsBar");
+            const resultMeta = document.getElementById("resultMeta");
+
+            if (raw_total_m <= 0) {
+                segmentsContainer.style.display = "none";
+                return;
+            }
+
+            const total = raw_total_m;
+            const vA = Math.max(vertical_a_m, 0);
+            const vB = Math.max(vertical_b_m, 0);
+            const h = Math.max(horizontal_m, 0);
+
+            const pct = (value) => (value / total) * 100;
+
+            segmentsBar.innerHTML = "";
+
+            if (vA > 0.001) {
+                const segA = document.createElement("div");
+                segA.className = "segment segment-vertical-a";
+                segA.style.width = `${pct(vA)}%`;
+                segA.textContent = `${vA.toFixed(2)} м`;
+                segmentsBar.appendChild(segA);
+            }
+
+            if (h > 0.001) {
+                const segH = document.createElement("div");
+                segH.className = "segment segment-horizontal";
+                segH.style.width = `${pct(h)}%`;
+                segH.textContent = `${h.toFixed(2)} м`;
+                segmentsBar.appendChild(segH);
+            }
+
+            if (vB > 0.001) {
+                const segB = document.createElement("div");
+                segB.className = "segment segment-vertical-b";
+                segB.style.width = `${pct(vB)}%`;
+                segB.textContent = `${vB.toFixed(2)} м`;
+                segmentsBar.appendChild(segB);
+            }
+
+            if (!same_rack && slack_added_m > 0.0001) {
+                resultMeta.textContent =
+                    `Без запаса: ${raw_total_m.toFixed(2)} м, ` +
+                    `добавленный запас между стойками: ${slack_added_m.toFixed(2)} м`;
+            } else {
+                resultMeta.textContent = `Без запаса: ${raw_total_m.toFixed(2)} м, запас не добавлялся`;
+            }
+
+            segmentsContainer.style.display = "block";
+        }
+
+        function svgEl(tag, attrs = {}) {
+            const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+            Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, String(v)));
+            return el;
+        }
+
+        function clamp(n, min, max) {
+            return Math.max(min, Math.min(max, n));
+        }
+
+        function renderRackVisualization(data) {
+            const rackVizContainer = document.getElementById("rackVizContainer");
+            const rackViz = document.getElementById("rackViz");
+            const rackVizTitle = document.getElementById("rackVizTitle");
+
+            // Очищаем
+            rackViz.innerHTML = "";
+
+            const rackA = data.server_a.rack_code;
+            const rackB = data.server_b.rack_code;
+            const unitA = data.server_a.unit;
+            const unitB = data.server_b.unit;
+            const sameRack = data.same_rack;
+
+            // Геометрия SVG
+            const W = 760, H = 420;
+            const rackW = 170;
+            const rackH = 320; // высота, соответствующая MAX_UNIT
+            const topY = 60;
+            const leftX = 170;
+            const rightX = 420;
+            const unitPx = rackH / MAX_UNIT;
+
+            // "Кабель-канал" (лоток) — горизонтальная линия сверху
+            const trayY = topY - 18;
+
+            // Помощник: y-координата центра юнита (1 — низ, MAX_UNIT — верх)
+            const unitToY = (unit) => {
+                const u = clamp(unit, 1, MAX_UNIT);
+                // unit=MAX_UNIT -> y ~ topY + unitPx/2, unit=1 -> y ~ topY + rackH - unitPx/2
+                return topY + (MAX_UNIT - u) * unitPx + unitPx / 2;
+            };
+
+            const yA = unitToY(unitA);
+            const yB = unitToY(unitB);
+
+            // Фон
+            rackViz.appendChild(svgEl("rect", { x: 0, y: 0, width: W, height: H, fill: "rgba(255,255,255,0.0)" }));
+
+            // Подписи стоек
+            rackViz.appendChild(
+                svgEl("text", {
+                    x: leftX + rackW / 2,
+                    y: 28,
+                    "text-anchor": "middle",
+                    fill: "#fff",
+                    "font-size": 16,
+                    "font-weight": 700,
+                }),
+            ).appendChild(document.createTextNode(rackA));
+
+            if (!sameRack) {
+                rackViz.appendChild(
+                    svgEl("text", {
+                        x: rightX + rackW / 2,
+                        y: 28,
+                        "text-anchor": "middle",
+                        fill: "#fff",
+                        "font-size": 16,
+                        "font-weight": 700,
+                    }),
+                ).appendChild(document.createTextNode(rackB));
+            }
+
+            // Лоток / кабель-канал
+            rackViz.appendChild(svgEl("line", { x1: leftX - 30, y1: trayY, x2: rightX + rackW + 30, y2: trayY, stroke: "rgba(255,255,255,0.65)", "stroke-width": 4, "stroke-linecap": "round" }));
+            rackViz.appendChild(svgEl("text", { x: (leftX + rightX + rackW) / 2, y: trayY - 10, "text-anchor": "middle", fill: "rgba(255,255,255,0.85)", "font-size": 12 }))
+                .appendChild(document.createTextNode("кабель‑канал"));
+
+            // Рисуем стойки (контур)
+            const rackStyle = { fill: "rgba(255,255,255,0.10)", stroke: "rgba(255,255,255,0.55)", "stroke-width": 2, rx: 10, ry: 10 };
+            rackViz.appendChild(svgEl("rect", { x: leftX, y: topY, width: rackW, height: rackH, ...rackStyle }));
+            if (!sameRack) {
+                rackViz.appendChild(svgEl("rect", { x: rightX, y: topY, width: rackW, height: rackH, ...rackStyle }));
+            }
+
+            // Тики юнитов (каждые 5U)
+            for (let u = 5; u <= MAX_UNIT; u += 5) {
+                const y = unitToY(u);
+                // левый
+                rackViz.appendChild(svgEl("line", { x1: leftX - 8, y1: y, x2: leftX, y2: y, stroke: "rgba(255,255,255,0.45)", "stroke-width": 1 }));
+                rackViz.appendChild(
+                    svgEl("text", {
+                        x: leftX - 12,
+                        y: y + 4,
+                        "text-anchor": "end",
+                        fill: "rgba(255,255,255,0.65)",
+                        "font-size": 10,
+                    }),
+                ).appendChild(document.createTextNode(String(u)));
+
+                if (!sameRack) {
+                    // правый
+                    rackViz.appendChild(svgEl("line", { x1: rightX + rackW, y1: y, x2: rightX + rackW + 8, y2: y, stroke: "rgba(255,255,255,0.45)", "stroke-width": 1 }));
+                    rackViz.appendChild(
+                        svgEl("text", {
+                            x: rightX + rackW + 12,
+                            y: y + 4,
+                            "text-anchor": "start",
+                            fill: "rgba(255,255,255,0.65)",
+                            "font-size": 10,
+                        }),
+                    ).appendChild(document.createTextNode(String(u)));
+                }
+            }
+
+            // Маркеры точек серверов (A и B) — в центре стойки,
+            // а кабель внутри стойки идёт по правому краю (как на примере).
+            // alignLeft: true  → текст справа от точки
+            // alignLeft: false → текст слева от точки
+            // dy: вертикальный сдвиг подписи (чтобы не перекрывать линию кабеля)
+            const marker = (cx, cy, label, alignLeft = true, dy = 0) => {
+                rackViz.appendChild(svgEl("circle", { cx, cy, r: 6, fill: "#ff4d4d" }));
+                const textX = alignLeft ? cx + 10 : cx - 10;
+                const anchor = alignLeft ? "start" : "end";
+                rackViz.appendChild(svgEl("text", {
+                    x: textX,
+                    y: cy + 4 + dy,
+                    fill: "#fff",
+                    "font-size": 12,
+                    "font-weight": 700,
+                    "text-anchor": anchor,
+                })).appendChild(document.createTextNode(label));
+            };
+
+            // Кабель внутри каждой стойки идёт по ПРАВОЙ стороне стойки,
+            // а серверы рисуем примерно по центру стоек.
+            const cableXLeftRack = leftX + rackW - 8; // линия кабеля вдоль правой стенки левой стойки
+            const cableXRightRack = rightX + rackW - 8; // линия кабеля вдоль правой стенки правой стойки
+
+            const serverXLeft = leftX + rackW / 2;
+            let serverXRight = null;
+
+            if (sameRack) {
+                // Оба сервера в одной стойке.
+                // Чтобы подписи не перекрывались кабелем,
+                // у A текст рисуем слева от точки, у B — слева и чуть выше линии.
+                marker(serverXLeft, yA, `A (${unitA}U)`, false);
+                marker(serverXLeft, yB, `B (${unitB}U)`, false, -10);
+            } else {
+                serverXRight = rightX + rackW / 2;
+                marker(serverXLeft, yA, `A (${unitA}U)`, true);
+                marker(serverXRight, yB, `B (${unitB}U)`, false);
+            }
+
+            // Красный маршрут кабеля
+            const pathColor = "#ff4d4d";
+            const pathWidth = 6;
+
+            if (data.same_rack) {
+                // Одна стойка: горизонтально от сервера до правой стенки,
+                // затем вертикально вдоль правой стенки между юнитами.
+                const xCable = cableXLeftRack;
+
+                // Горизонтальный участок от сервера A до вертикали кабеля
+                rackViz.appendChild(
+                    svgEl("line", {
+                        x1: serverXLeft,
+                        y1: yA,
+                        x2: xCable,
+                        y2: yA,
+                        stroke: pathColor,
+                        "stroke-width": pathWidth,
+                        "stroke-linecap": "round",
+                    }),
+                );
+
+                // Вертикальный участок по правой стороне стойки
+                rackViz.appendChild(
+                    svgEl("line", {
+                        x1: xCable,
+                        y1: yA,
+                        x2: xCable,
+                        y2: yB,
+                        stroke: pathColor,
+                        "stroke-width": pathWidth,
+                        "stroke-linecap": "round",
+                    }),
+                );
+
+                // Горизонтальный участок от вертикали кабеля до сервера B —
+                // чтобы точка B также была "подвешена" к красному кабелю.
+                rackViz.appendChild(
+                    svgEl("line", {
+                        x1: xCable,
+                        y1: yB,
+                        x2: serverXLeft,
+                        y2: yB,
+                        stroke: pathColor,
+                        "stroke-width": pathWidth,
+                        "stroke-linecap": "round",
+                    }),
+                );
+
+                const midY = (yA + yB) / 2;
+                rackViz.appendChild(
+                    svgEl("text", {
+                        x: xCable + 14,
+                        y: midY + 6,
+                        fill: "#fff",
+                        "font-size": 20,
+                        "font-weight": 800,
+                        "text-anchor": "start",
+                    }),
+                ).appendChild(document.createTextNode(`${data.vertical_a_m.toFixed(2)} м`));
+
+                rackVizTitle.textContent = "Маршрут кабеля внутри стойки (вправо → вверх/вниз)";
+            } else {
+                // Разные стойки: вверх до лотка, по лотку, вниз.
+                // Внутри каждой стойки: горизонталь до правой стенки, затем вверх/вниз.
+                const upX = cableXLeftRack;
+                const downX = cableXRightRack;
+
+                // Горизонтальный участок внутри левой стойки (от сервера до кабельной вертикали)
+                rackViz.appendChild(
+                    svgEl("line", {
+                        x1: serverXLeft,
+                        y1: yA,
+                        x2: upX,
+                        y2: yA,
+                        stroke: pathColor,
+                        "stroke-width": pathWidth,
+                        "stroke-linecap": "round",
+                    }),
+                );
+
+                // Вверх (A -> tray) по правой стороне левой стойки
+                rackViz.appendChild(
+                    svgEl("line", {
+                        x1: upX,
+                        y1: yA,
+                        x2: upX,
+                        y2: trayY,
+                        stroke: pathColor,
+                        "stroke-width": pathWidth,
+                        "stroke-linecap": "round",
+                    }),
+                );
+                rackViz.appendChild(
+                    svgEl("text", {
+                        x: upX - 10,
+                        y: (yA + trayY) / 2 + 2,
+                        fill: "#fff",
+                        "font-size": 20,
+                        "font-weight": 800,
+                        "text-anchor": "end",
+                    }),
+                ).appendChild(document.createTextNode(`${data.vertical_a_m.toFixed(2)} м`));
+
+                // По лотку (между стойками)
+                rackViz.appendChild(
+                    svgEl("line", {
+                        x1: upX,
+                        y1: trayY,
+                        x2: downX,
+                        y2: trayY,
+                        stroke: pathColor,
+                        "stroke-width": pathWidth,
+                        "stroke-linecap": "round",
+                    }),
+                );
+                rackViz.appendChild(
+                    svgEl("text", {
+                        x: (upX + downX) / 2,
+                        y: trayY - 20,
+                        fill: "#fff",
+                        "font-size": 20,
+                        "font-weight": 800,
+                        "text-anchor": "middle",
+                    }),
+                ).appendChild(document.createTextNode(`${data.horizontal_m.toFixed(2)} м`));
+
+                // Вниз (tray -> B) по правой стороне правой стойки
+                rackViz.appendChild(
+                    svgEl("line", {
+                        x1: downX,
+                        y1: trayY,
+                        x2: downX,
+                        y2: yB,
+                        stroke: pathColor,
+                        "stroke-width": pathWidth,
+                        "stroke-linecap": "round",
+                    }),
+                );
+                rackViz.appendChild(
+                    svgEl("text", {
+                        x: downX + 10,
+                        y: (yB + trayY) / 2 + 2,
+                        fill: "#fff",
+                        "font-size": 20,
+                        "font-weight": 800,
+                        "text-anchor": "start",
+                    }),
+                ).appendChild(document.createTextNode(`${data.vertical_b_m.toFixed(2)} м`));
+
+                // Горизонтальный участок внутри правой стойки (от вертикали до сервера)
+                rackViz.appendChild(
+                    svgEl("line", {
+                        x1: downX,
+                        y1: yB,
+                        x2: serverXRight,
+                        y2: yB,
+                        stroke: pathColor,
+                        "stroke-width": pathWidth,
+                        "stroke-linecap": "round",
+                    }),
+                );
+
+                // Отметим, что запас добавляется отдельно (если есть)
+                if (data.slack_added_m && data.slack_added_m > 0.0001) {
+                    rackViz.appendChild(svgEl("text", { x: (leftX + rightX + rackW) / 2, y: H - 22, fill: "rgba(255,255,255,0.95)", "font-size": 12, "text-anchor": "middle" }))
+                        .appendChild(document.createTextNode(`+ запас: ${data.slack_added_m.toFixed(2)} м (добавляется только между стойками)`));
+                }
+
+                rackVizTitle.textContent = "Маршрут кабеля: вверх → по кабель‑каналу → вниз";
+            }
+
+            rackVizContainer.style.display = "block";
+        }
+
+        document.getElementById("calculatorForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const rackCodeA = document.getElementById("rack1").value;
+            const rackCodeB = document.getElementById("rack2").value;
+            const unitA = parseInt(document.getElementById("unit1").value, 10);
+            const unitB = parseInt(document.getElementById("unit2").value, 10);
+            const hostnameA = (document.getElementById("hostname1").value || "").trim();
+            const hostnameB = (document.getElementById("hostname2").value || "").trim();
+
+            const slack = parseFloat(document.getElementById("slack").value);
+            const rounding = parseFloat(document.getElementById("rounding").value);
+
+            if (!rackCodeA || !rackCodeB) {
+                alert("Выберите обе стойки из диапазона 02b03–02b18.");
+                return;
+            }
+
+            if (
+                Number.isNaN(unitA) ||
+                Number.isNaN(unitB) ||
+                unitA < 1 ||
+                unitA > 50 ||
+                unitB < 1 ||
+                unitB > 50
+            ) {
+                alert("Номер юнита должен быть от 1 до 50.");
+                return;
+            }
+
+            const payload = {
+                server_a: { rack_code: rackCodeA, unit: unitA, hostname: hostnameA || undefined },
+                server_b: { rack_code: rackCodeB, unit: unitB, hostname: hostnameB || undefined },
+                config: {
+                    cross_rack_slack_m: slack,
+                    rounding_step_m: rounding,
+                },
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/calculate`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    throw new Error(errData.detail || "Ошибка расчёта");
+                }
+
+                const data = await res.json();
+
+                document.getElementById("resultValue").textContent =
+                    data.length_m.toFixed(2) + " м";
+
+                const hostA = data.server_a.hostname ? ` (${data.server_a.hostname})` : "";
+                const hostB = data.server_b.hostname ? ` (${data.server_b.hostname})` : "";
+
+                const details =
+                    `Сервер A: Стойка ${data.server_a.rack_code}, Юнит ${data.server_a.unit}${hostA} → ` +
+                    `Сервер B: Стойка ${data.server_b.rack_code}, Юнит ${data.server_b.unit}${hostB}`;
+                document.getElementById("resultDetails").textContent = details;
+
+                updateSegmentsVisualization(data);
+                renderRackVisualization(data);
+
+                const resultDiv = document.getElementById("result");
+                resultDiv.classList.add("show");
+                resultDiv.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            } catch (err) {
+                console.error(err);
+                alert(err.message || "Произошла ошибка при расчёте.");
+            }
+        });
+
+        // Загружаем список стоек при открытии страницы
+        loadRacks();
+
+        // Логика открытия/закрытия панели настроек
+        const settingsToggle = document.getElementById("settingsToggle");
+        const settingsPanel = document.getElementById("settingsPanel");
+        settingsToggle.addEventListener("click", () => {
+            settingsPanel.classList.toggle("open");
+        });
+    </script>
+</body>
+</html>

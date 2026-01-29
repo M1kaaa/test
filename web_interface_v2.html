@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Калькулятор длины патч-кордов</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .page {
+            min-height: 100vh;
+            padding: 16px 24px;
+        }
+
+        .shell {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 16px 20px 20px;
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-left h1 {
+            font-size: 20px;
+            margin: 0 0 4px;
+        }
+
+        .header-left p {
+            margin: 0;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .settings-btn {
+            border: none;
+            background: #f5f5f5;
+            border-radius: 999px;
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+        }
+
+        .settings-btn span {
+            display: none;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1.1fr 1.4fr;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .panel {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 14px 16px 16px;
+        }
+
+        .panel h2 {
+            margin: 0 0 10px;
+            font-size: 15px;
+        }
+
+        .server-block {
+            margin-bottom: 10px;
+        }
+
+        .server-block-title {
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            margin-bottom: 4px;
+            color: #444;
+        }
+
+        select,
+        input[type="number"],
+        input[type="text"] {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid #d0d0d0;
+            font-size: 13px;
+        }
+
+        select:focus,
+        input[type="number"]:focus,
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .host-row {
+            margin-bottom: 4px;
+        }
+
+        .host-row input {
+            font-size: 12px;
+        }
+
+        .settings-panel {
+            margin-top: 8px;
+            display: none;
+        }
+
+        .settings-panel.open {
+            display: block;
+        }
+
+        .settings-panel h3 {
+            margin: 0 0 6px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .submit-row {
+            margin-top: 8px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 999px;
+            border: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .result-header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .result-header h2 {
+            margin: 0 0 4px;
+            font-size: 18px;
+            color: #0f5132;
+        }
+
+        .result-header .value {
+            font-size: 26px;
+            font-weight: 800;
+        }
+
+        .result-header .recommended {
+            margin-top: 2px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #0d6efd;
+        }
+
+        .result-header .summary {
+            margin-top: 4px;
+            font-size: 12px;
+        }
+
+        .segments {
+            margin-top: 8px;
+        }
+
+        .segments-bar {
+            display: flex;
+            height: 20px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            color: #fff;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .seg-a {
+            background: rgba(255, 255, 255, 0.35);
+        }
+
+        .seg-h {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .seg-b {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .segments-legend {
+            margin-top: 6px;
+            font-size: 11px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 16px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 4px;
+        }
+
+        .legend-a {
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        .legend-h {
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .legend-b {
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .result-meta {
+            margin-top: 4px;
+            font-size: 11px;
+        }
+
+        .rack-viz-title {
+            margin-top: 10px;
+            font-size: 13px;
+        }
+
+        .rack-viz {
+            margin-top: 6px;
+            background: #2d3748;
+            border-radius: 12px;
+            padding: 10px 10px 8px;
+        }
+
+        .rack-viz .rack-viz-title {
+            color: #e2e8f0;
+        }
+
+        .rack-viz svg {
+            width: 100%;
+            height: 240px;
+            display: block;
+        }
+
+        @media (max-width: 960px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="shell">
+            <div class="header">
+                <div class="header-left">
+                    <h1>🔌 Калькулятор патч-кордов</h1>
+                    <p>Расчёт длины кабеля для коммутации серверов в дата-центре</p>
+                </div>
+                <button type="button" class="settings-btn" id="settingsToggle">⚙️<span>Настройки</span></button>
+            </div>
+
+            <div class="layout">
+                <div class="panel">
+                    <form id="calculatorForm">
+                        <div class="server-block">
+                            <div class="server-block-title">Сервер A</div>
+                            <div class="form-row">
+                                <div>
+                                    <label for="rack1">Стойка (02b03–02b18)</label>
+                                    <select id="rack1" required>
+                                        <option value="">Выберите стойку</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="unit1">Юнит (1–50)</label>
+                                    <input id="unit1" type="number" min="1" max="50" required />
+                                </div>
+                            </div>
+                            <div class="host-row">
+                                <label for="hostname1">Хостнейм (опционально)</label>
+                                <input id="hostname1" type="text" placeholder="например, msk-f1111" />
+                            </div>
+                        </div>
+
+                        <div class="server-block">
+                            <div class="server-block-title">Сервер B</div>
+                            <div class="form-row">
+                                <div>
+                                    <label for="rack2">Стойка (02b03–02b18)</label>
+                                    <select id="rack2" required>
+                                        <option value="">Выберите стойку</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="unit2">Юнит (1–50)</label>
+                                    <input id="unit2" type="number" min="1" max="50" required />
+                                </div>
+                            </div>
+                            <div class="host-row">
+                                <label for="hostname2">Хостнейм (опционально)</label>
+                                <input id="hostname2" type="text" placeholder="например, msk-f123" />
+                            </div>
+                        </div>
+
+                        <div class="settings-panel" id="settingsPanel">
+                            <h3>Дополнительные настройки</h3>
+                            <div class="form-row">
+                                <div>
+                                    <label for="slack">Запас между стойками (м)</label>
+                                    <input id="slack" type="number" min="0" step="0.1" value="0.5" />
+                                </div>
+                                <div>
+                                    <label for="rounding">Шаг округления (м)</label>
+                                    <input id="rounding" type="number" min="0.1" step="0.1" value="0.5" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="submit-row">
+                            <button type="submit" class="submit-btn">Рассчитать длину</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="panel" id="resultPanel">
+                    <div class="result-header">
+                        <h2>Результат расчёта</h2>
+                        <div class="value" id="resultValue">—</div>
+                        <div class="recommended" id="resultRecommended"></div>
+                        <div class="summary" id="resultSummary"></div>
+                    </div>
+
+                    <div class="segments" id="segmentsContainer" style="display: none;">
+                        <div class="segments-bar" id="segmentsBar"></div>
+                        <div class="segments-legend">
+                            <div class="legend-item">
+                                <span class="legend-dot legend-a"></span> Вертикаль от сервера A до лотка
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-dot legend-h"></span> Горизонталь по кабель‑каналу
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-dot legend-b"></span> Вертикаль от сервера B до лотка
+                            </div>
+                        </div>
+                        <div class="result-meta" id="resultMeta"></div>
+                    </div>
+
+                    <div class="rack-viz" id="rackVizWrapper" style="display: none;">
+                        <div class="rack-viz-title" id="rackVizTitle"></div>
+                        <svg id="rackViz" viewBox="0 0 760 420"></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = "http://localhost:8000";
+        const MAX_UNIT = 50;
+
+        async function loadRacks() {
+            try {
+                const res = await fetch(`${API_BASE}/racks`);
+                if (!res.ok) throw new Error("Ошибка загрузки списка стоек");
+                const data = await res.json();
+
+                const rack1 = document.getElementById("rack1");
+                const rack2 = document.getElementById("rack2");
+                data.racks.forEach((r) => {
+                    const o1 = document.createElement("option");
+                    o1.value = r.code;
+                    o1.textContent = r.code;
+                    rack1.appendChild(o1);
+
+                    const o2 = document.createElement("option");
+                    o2.value = r.code;
+                    o2.textContent = r.code;
+                    rack2.appendChild(o2);
+                });
+            } catch (e) {
+                alert("Не удалось загрузить список стоек. Убедитесь, что API запущен.");
+                console.error(e);
+            }
+        }
+
+        function updateSegments(breakdown) {
+            const segContainer = document.getElementById("segmentsContainer");
+            const bar = document.getElementById("segmentsBar");
+            const meta = document.getElementById("resultMeta");
+            const { vertical_a_m, vertical_b_m, horizontal_m, raw_total_m, slack_added_m, same_rack } =
+                breakdown;
+
+            if (raw_total_m <= 0) {
+                segContainer.style.display = "none";
+                return;
+            }
+
+            const total = raw_total_m;
+            bar.innerHTML = "";
+
+            const addSeg = (len, cls) => {
+                if (len <= 0.001) return;
+                const div = document.createElement("div");
+                div.className = `segment ${cls}`;
+                div.style.width = `${(len / total) * 100}%`;
+                div.textContent = `${len.toFixed(2)} м`;
+                bar.appendChild(div);
+            };
+
+            addSeg(vertical_a_m, "seg-a");
+            addSeg(horizontal_m, "seg-h");
+            addSeg(vertical_b_m, "seg-b");
+
+            if (!same_rack && slack_added_m > 0.0001) {
+                meta.textContent = `Без запаса: ${raw_total_m.toFixed(
+                    2,
+                )} м, добавленный запас между стойками: ${slack_added_m.toFixed(2)} м`;
+            } else {
+                meta.textContent = `Без запаса: ${raw_total_m.toFixed(
+                    2,
+                )} м, запас не добавлялся`;
+            }
+
+            segContainer.style.display = "block";
+        }
+
+        function svgEl(tag, attrs = {}) {
+            const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+            Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, String(v)));
+            return el;
+        }
+
+        function clamp(n, min, max) {
+            return Math.max(min, Math.min(max, n));
+        }
+
+        function renderRackViz(data) {
+            const wrapper = document.getElementById("rackVizWrapper");
+            const svg = document.getElementById("rackViz");
+            const title = document.getElementById("rackVizTitle");
+            svg.innerHTML = "";
+
+            const rackA = data.server_a.rack_code;
+            const rackB = data.server_b.rack_code;
+            const unitA = data.server_a.unit;
+            const unitB = data.server_b.unit;
+            const sameRack = data.same_rack;
+
+            const W = 760,
+                H = 420;
+            const rackW = 170;
+            const rackH = 320;
+            const topY = 60;
+            const leftX = 170;
+            const rightX = 420;
+            const unitPx = rackH / MAX_UNIT;
+            const trayY = topY - 18;
+
+            const unitToY = (u) =>
+                topY + (MAX_UNIT - clamp(u, 1, MAX_UNIT)) * unitPx + unitPx / 2;
+
+            const yA = unitToY(unitA);
+            const yB = unitToY(unitB);
+
+            svg.appendChild(
+                svgEl("rect", { x: 0, y: 0, width: W, height: H, fill: "transparent" }),
+            );
+
+            // Titles
+            svg.appendChild(
+                svgEl("text", {
+                    x: leftX + rackW / 2,
+                    y: 28,
+                    "text-anchor": "middle",
+                    fill: "#fff",
+                    "font-size": 16,
+                    "font-weight": 700,
+                }),
+            ).appendChild(document.createTextNode(rackA));
+
+            if (!sameRack) {
+                svg.appendChild(
+                    svgEl("text", {
+                        x: rightX + rackW / 2,
+                        y: 28,
+                        "text-anchor": "middle",
+                        fill: "#fff",
+                        "font-size": 16,
+                        "font-weight": 700,
+                    }),
+                ).appendChild(document.createTextNode(rackB));
+            }
+
+            // Cable tray
+            svg.appendChild(
+                svgEl("line", {
+                    x1: leftX - 30,
+                    y1: trayY,
+                    x2: rightX + rackW + 30,
+                    y2: trayY,
+                    stroke: "rgba(255,255,255,0.7)",
+                    "stroke-width": 4,
+                    "stroke-linecap": "round",
+                }),
+            );
+            svg.appendChild(
+                svgEl("text", {
+                    x: (leftX + rightX + rackW) / 2,
+                    y: trayY - 10,
+                    "text-anchor": "middle",
+                    fill: "rgba(255,255,255,0.85)",
+                    "font-size": 12,
+                }),
+            ).appendChild(document.createTextNode("кабель‑канал"));
+
+            // Racks
+            const rackStyle = {
+                fill: "rgba(255,255,255,0.10)",
+                stroke: "rgba(255,255,255,0.55)",
+                "stroke-width": 2,
+                rx: 10,
+                ry: 10,
+            };
+            svg.appendChild(
+                svgEl("rect", { x: leftX, y: topY, width: rackW, height: rackH, ...rackStyle }),
+            );
+            if (!sameRack) {
+                svg.appendChild(
+                    svgEl("rect", {
+                        x: rightX,
+                        y: topY,
+                        width: rackW,
+                        height: rackH,
+                        ...rackStyle,
+                    }),
+                );
+            }
+
+            // Unit ticks
+            for (let u = 5; u <= MAX_UNIT; u += 5) {
+                const y = unitToY(u);
+                svg.appendChild(
+                    svgEl("line", {
+                        x1: leftX - 8,
+                        y1: y,
+                        x2: leftX,
+                        y2: y,
+                        stroke: "rgba(255,255,255,0.45)",
+                        "stroke-width": 1,
+                    }),
+                );
+                svg.appendChild(
+                    svgEl("text", {
+                        x: leftX - 12,
+                        y: y + 4,
+                        "text-anchor": "end",
+                        fill: "rgba(255,255,255,0.65)",
+                        "font-size": 10,
+                    }),
+                ).appendChild(document.createTextNode(String(u)));
+
+                if (!sameRack) {
+                    svg.appendChild(
+                        svgEl("line", {
+                            x1: rightX + rackW,
+                            y1: y,
+                            x2: rightX + rackW + 8,
+                            y2: y,
+                            stroke: "rgba(255,255,255,0.45)",
+                            "stroke-width": 1,
+                        }),
+                    );
+                    svg.appendChild(
+                        svgEl("text", {
+                            x: rightX + rackW + 12,
+                            y: y + 4,
+                            "text-anchor": "start",
+                            fill: "rgba(255,255,255,0.65)",
+                            "font-size": 10,
+                        }),
+                    ).appendChild(document.createTextNode(String(u)));
+                }
+            }
+
+            // Markers
+            const marker = (cx, cy, label, alignRight = false, dy = 0) => {
+                svg.appendChild(svgEl("circle", { cx, cy, r: 6, fill: "#ff4d4d" }));
+                svg.appendChild(
+                    svgEl("text", {
+                        x: alignRight ? cx - 10 : cx + 10,
+                        y: cy + 4 + dy,
+                        "text-anchor": alignRight ? "end" : "start",
+                        fill: "#fff",
+                        "font-size": 12,
+                        "font-weight": 700,
+                    }),
+                ).appendChild(document.createTextNode(label));
+            };
+
+            const cableXLeft = leftX + rackW - 8;
+            const cableXRight = rightX + rackW - 8;
+            const serverXLeft = leftX + rackW / 2;
+            let serverXRight = null;
+
+            if (sameRack) {
+                marker(serverXLeft, yA, `A (${unitA}U)`, true);
+                marker(serverXLeft, yB, `B (${unitB}U)`, true, -10);
+            } else {
+                serverXRight = rightX + rackW / 2;
+                marker(serverXLeft, yA, `A (${unitA}U)`, false);
+                marker(serverXRight, yB, `B (${unitB}U)`, true);
+            }
+
+            const pathColor = "#ff4d4d";
+            const pathWidth = 6;
+
+            if (sameRack) {
+                // A -> вправо до кабеля
+                svg.appendChild(
+                    svgEl("line", {
+                        x1: serverXLeft,
+                        y1: yA,
+                        x2: cableXLeft,
+                        y2: yA,
+                        stroke: pathColor,
+                        "stroke-width": pathWidth,
+                        "stroke-linecap": "round",
+                    }),
+                );
+                // вверх/вниз по правой стороне
+                svg.appendChild(
+                    svgEl("line", {
+                        x1: cableXLeft,
+                        y1: yA,
+                        x2: cableXLeft,
+                        y2: yB,
+                        stroke: pathColor,
+                        "stroke-width": pathWidth,
+                        "stroke-linecap": "round",
+                    }),
+                );
+                // до B
+                svg.appendChild(
+                    svgEl("line", {
+                        x1: cableXLeft,
+                        y1: yB,
+                        x2: serverXLeft,
+                        y2: yB,
+                        stroke: pathColor,
+                        "stroke-width": pathWidth,
+                        "stroke-linecap": "round",
+                    }),
+                );
+
+                const midY = (yA + yB) / 2;
+                svg.appendChild(
+                    svgEl("text", {
+                        x: cableXLeft + 14,
+                        y: midY + 6,
+                        fill: "#fff",
+                        "font-size": 20,
+                        "font-weight": 800,
+                        "text-anchor": "start",
+                    }),
+                ).appendChild(document.createTextNode(`${data.vertical_a_m.toFixed(2)} м`));
+
+                title.textContent = "Маршрут кабеля внутри стойки (вправо → вверх/вниз)";
+            } else {
+                // Левый сервер: до правой стенки
+                svg.appendChild(
+                    svgEl("line", {
+                        x1: serverXLeft,
+                        y1: yA,
+                        x2: cableXLeft,
+                        y2: yA,
+                        stroke: pathColor,
+                        "stroke-width": pathWidth,
+                        "stroke-linecap": "round",
+                    }),
+                );
+                // вверх
+                svg.appendChild(
+                    svgEl("line", {
+                        x1: cableXLeft,
+                        y1: yA,
+                        x2: cableXLeft,
+                        y2: trayY,
+                        stroke: pathColor,
+                        "stroke-width": pathWidth,
+                        "stroke-linecap": "round",
+                    }),
+                );
+                // по лотку
+                svg.appendChild(
+                    svgEl("line", {
+                        x1: cableXLeft,
+                        y1: trayY,
+                        x2: cableXRight,
+                        y2: trayY,
+                        stroke: pathColor,
+                        "stroke-width": pathWidth,
+                        "stroke-linecap": "round",
+                    }),
+                );
+                // вниз
+                svg.appendChild(
+                    svgEl("line", {
+                        x1: cableXRight,
+                        y1: trayY,
+                        x2: cableXRight,
+                        y2: yB,
+                        stroke: pathColor,
+                        "stroke-width": pathWidth,
+                        "stroke-linecap": "round",
+                    }),
+                );
+                // до правого сервера
+                svg.appendChild(
+                    svgEl("line", {
+                        x1: cableXRight,
+                        y1: yB,
+                        x2: serverXRight,
+                        y2: yB,
+                        stroke: pathColor,
+                        "stroke-width": pathWidth,
+                        "stroke-linecap": "round",
+                    }),
+                );
+
+                const { vertical_a_m, vertical_b_m, horizontal_m } = data;
+
+                svg.appendChild(
+                    svgEl("text", {
+                        x: cableXLeft - 10,
+                        y: (yA + trayY) / 2 + 2,
+                        fill: "#fff",
+                        "font-size": 20,
+                        "font-weight": 800,
+                        "text-anchor": "end",
+                    }),
+                ).appendChild(document.createTextNode(`${vertical_a_m.toFixed(2)} м`));
+
+                svg.appendChild(
+                    svgEl("text", {
+                        x: (cableXLeft + cableXRight) / 2,
+                        y: trayY - 20,
+                        fill: "#fff",
+                        "font-size": 20,
+                        "font-weight": 800,
+                        "text-anchor": "middle",
+                    }),
+                ).appendChild(document.createTextNode(`${horizontal_m.toFixed(2)} м`));
+
+                svg.appendChild(
+                    svgEl("text", {
+                        x: cableXRight + 10,
+                        y: (yB + trayY) / 2 + 2,
+                        fill: "#fff",
+                        "font-size": 20,
+                        "font-weight": 800,
+                        "text-anchor": "start",
+                    }),
+                ).appendChild(document.createTextNode(`${vertical_b_m.toFixed(2)} м`));
+
+                if (data.slack_added_m && data.slack_added_m > 0.0001) {
+                    svg.appendChild(
+                        svgEl("text", {
+                            x: (leftX + rightX + rackW) / 2,
+                            y: H - 22,
+                            fill: "rgba(255,255,255,0.95)",
+                            "font-size": 12,
+                            "text-anchor": "middle",
+                        }),
+                    ).appendChild(
+                        document.createTextNode(
+                            `+ запас: ${data.slack_added_m.toFixed(
+                                2,
+                            )} м (добавляется только между стойками)`,
+                        ),
+                    );
+                }
+
+                title.textContent = "Маршрут кабеля: вверх → по кабель‑каналу → вниз";
+            }
+
+            wrapper.style.display = "block";
+        }
+
+        document.getElementById("calculatorForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const rack1 = document.getElementById("rack1").value;
+            const rack2 = document.getElementById("rack2").value;
+            const unit1 = parseInt(document.getElementById("unit1").value, 10);
+            const unit2 = parseInt(document.getElementById("unit2").value, 10);
+            const hostname1 = document.getElementById("hostname1").value.trim();
+            const hostname2 = document.getElementById("hostname2").value.trim();
+            const slack = parseFloat(document.getElementById("slack").value);
+            const rounding = parseFloat(document.getElementById("rounding").value);
+
+            if (!rack1 || !rack2) {
+                alert("Выберите обе стойки.");
+                return;
+            }
+            if (
+                Number.isNaN(unit1) ||
+                Number.isNaN(unit2) ||
+                unit1 < 1 ||
+                unit1 > 50 ||
+                unit2 < 1 ||
+                unit2 > 50
+            ) {
+                alert("Номер юнита должен быть от 1 до 50.");
+                return;
+            }
+
+            const payload = {
+                server_a: {
+                    rack_code: rack1,
+                    unit: unit1,
+                    hostname: hostname1 || undefined,
+                },
+                server_b: {
+                    rack_code: rack2,
+                    unit: unit2,
+                    hostname: hostname2 || undefined,
+                },
+                config: {
+                    cross_rack_slack_m: slack,
+                    rounding_step_m: rounding,
+                },
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/calculate`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.detail || "Ошибка расчёта");
+                }
+                const data = await res.json();
+
+                const rawTotal = data.raw_total_m;
+                const recommended = data.recommended_patch_cord_m ?? data.length_m;
+                document.getElementById("resultValue").textContent = `${rawTotal.toFixed(2)} м`;
+                document.getElementById(
+                    "resultRecommended",
+                ).textContent = `Рекомендуемый патч-корд: ${recommended} м (из ряда 1, 1.5, 2, 3, 5, 7.5, 10, 15, 20 м)`;
+
+                const hostA = data.server_a.hostname ? ` (${data.server_a.hostname})` : "";
+                const hostB = data.server_b.hostname ? ` (${data.server_b.hostname})` : "";
+                document.getElementById(
+                    "resultSummary",
+                ).textContent = `Сервер A: Стойка ${data.server_a.rack_code}, Юнит ${
+                    data.server_a.unit
+                }${hostA} → Сервер B: Стойка ${data.server_b.rack_code}, Юнит ${
+                    data.server_b.unit
+                }${hostB}`;
+
+                updateSegments(data);
+                renderRackViz(data);
+            } catch (err) {
+                alert(err.message || "Произошла ошибка при расчёте.");
+                console.error(err);
+            }
+        });
+
+        document.getElementById("settingsToggle").addEventListener("click", () => {
+            document.getElementById("settingsPanel").classList.toggle("open");
+        });
+
+        loadRacks();
+    </script>
+</body>
+</html>
+
