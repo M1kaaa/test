@@ -12,6 +12,7 @@ env/
 .eggs/
 dist/
 build/
+*.spec
 
 # IDE
 .idea/
