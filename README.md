@@ -1,67 +1,66 @@
-# Patch Cord Calculator
+# Калькулятор патч-кордов
 
-Web application for calculating patch-cord length between servers in a data center.
+Веб-приложение для расчета длины патч-кордов между серверами в дата-центре.
 
-## Features
+## Возможности
 
-- Supports same-rack and cross-rack scenarios
-- Cable route visualization
-- Recommended standard patch-cord length
-- Rack list loaded from `racks-condition (10).xlsx` (`02b03` to `02b18`)
+- Расчет для сценариев: в одной стойке и в разных стойках
+- Визуализация маршрута кабеля
+- Рекомендация ближайшего стандартного патч-корда
+- Загрузка стоек из `racks-condition (10).xlsx` (диапазон `02b03`–`02b18`)
 
-## Requirements
+## Требования
 
 - Windows 10/11
 - Python 3.11+
-- Web browser
+- Браузер
 
-## Installation (from source)
+## Установка (из исходников)
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Run
+## Запуск
 
-### Option 1 (recommended on Windows)
+### Вариант 1 (рекомендуется для Windows)
 
-Double-click the Windows launcher batch file in the project root:
-- `zapusit.bat` (or the default launcher `.bat` file shipped with the project)
+Двойной клик по `запустить.bat`.
 
-### Option 2 (Python)
+### Вариант 2 (через Python)
 
 ```bash
 python run_app.py
 ```
 
-The browser opens automatically after startup.
+После запуска браузер откроется автоматически.
 
-## Portable build (no Python required)
+## Портативная версия (без Python)
 
-Use file from `dist`:
+Используйте сборку из папки `dist`:
 
 - `PatchCordCalculatorPortable.zip`
 
-How to use:
+Как использовать:
 
-1. Unzip the archive
-2. Run `PatchCordCalculator.exe`
-3. Wait for the browser to open
+1. Распакуйте архив
+2. Запустите `PatchCordCalculator.exe`
+3. Дождитесь открытия браузера
 
-## Project structure
+## Структура проекта
 
-- `cable_calculator.py` - calculation logic
-- `rack_plan.py` - rack loading/filtering from Excel
-- `web_api.py` - FastAPI backend
-- `web_interface_v2.html` - main frontend
-- `run_app.py` - unified launcher
-- Windows launcher `.bat` file - quick start on Windows
+- `cable_calculator.py` — логика расчета
+- `rack_plan.py` — загрузка и фильтрация стоек из Excel
+- `web_api.py` — FastAPI backend
+- `web_interface_v2.html` — основной интерфейс
+- `run_app.py` — единая точка запуска
+- `запустить.bat` — быстрый запуск для Windows
 
-## Notes
+## Примечания
 
-- API and web server run on localhost
-- If firewall warning appears, allow local access
+- API и веб-сервер работают локально (`localhost`)
+- При предупреждении брандмауэра разрешите локальный доступ
 
-## License
+## Лицензия
 
-Internal use.
+Внутреннее использование.
