@@ -1,70 +1,67 @@
-﻿# РљР°Р»СЊРєСѓР»СЏС‚РѕСЂ РїР°С‚С‡-РєРѕСЂРґРѕРІ
+# Patch Cord Calculator
 
-Р’РµР±-РїСЂРёР»РѕР¶РµРЅРёРµ РґР»СЏ СЂР°СЃС‡РµС‚Р° РґР»РёРЅС‹ РїР°С‚С‡-РєРѕСЂРґРѕРІ РјРµР¶РґСѓ СЃРµСЂРІРµСЂР°РјРё РІ РґР°С‚Р°-С†РµРЅС‚СЂРµ.
+Web application for calculating patch-cord length between servers in a data center.
 
-- РїРѕРґРґРµСЂР¶РєР° СЃС†РµРЅР°СЂРёРµРІ: РІ РѕРґРЅРѕР№ СЃС‚РѕР№РєРµ / РІ СЂР°Р·РЅС‹С… СЃС‚РѕР№РєР°С…
-- РІРёР·СѓР°Р»РёР·Р°С†РёСЏ РјР°СЂС€СЂСѓС‚Р° РєР°Р±РµР»СЏ
-- СЂРµРєРѕРјРµРЅРґР°С†РёРё РїРѕ СЃС‚Р°РЅРґР°СЂС‚РЅС‹Рј РґР»РёРЅР°Рј РїР°С‚С‡-РєРѕСЂРґРѕРІ
-- Р·Р°РіСЂСѓР·РєР° СЃС‚РѕРµРє РёР· `racks-condition (10).xlsx` (РґРёР°РїР°Р·РѕРЅ `02b03вЂ“02b18`)
+## Features
 
-## РўСЂРµР±РѕРІР°РЅРёСЏ
+- Supports same-rack and cross-rack scenarios
+- Cable route visualization
+- Recommended standard patch-cord length
+- Rack list loaded from `racks-condition (10).xlsx` (`02b03` to `02b18`)
+
+## Requirements
 
 - Windows 10/11
 - Python 3.11+
-- Р”РѕСЃС‚СѓРї РІ Р±СЂР°СѓР·РµСЂ
+- Web browser
 
-## РЈСЃС‚Р°РЅРѕРІРєР° (РёР· РёСЃС…РѕРґРЅРёРєРѕРІ)
+## Installation (from source)
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Р—Р°РїСѓСЃРє
+## Run
 
-### Р’Р°СЂРёР°РЅС‚ 1 (СЂРµРєРѕРјРµРЅРґСѓРµС‚СЃСЏ, Windows)
+### Option 1 (recommended on Windows)
 
-Р”РІРѕР№РЅРѕР№ РєР»РёРє РїРѕ С„Р°Р№Р»Сѓ:
+Double-click the Windows launcher batch file in the project root:
+- `zapusit.bat` (or the default launcher `.bat` file shipped with the project)
 
-- `Р·Р°РїСѓСЃС‚РёС‚СЊ.bat`
-
-РЎРєСЂРёРїС‚ РїРѕРґРЅРёРјРµС‚ API Рё РІРµР±-РёРЅС‚РµСЂС„РµР№СЃ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё.
-
-### Р’Р°СЂРёР°РЅС‚ 2 (С‡РµСЂРµР· Python)
+### Option 2 (Python)
 
 ```bash
 python run_app.py
 ```
 
-РџРѕСЃР»Рµ Р·Р°РїСѓСЃРєР° Р±СЂР°СѓР·РµСЂ РѕС‚РєСЂРѕРµС‚СЃСЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё.
+The browser opens automatically after startup.
 
-## РџРѕСЂС‚Р°С‚РёРІРЅР°СЏ РІРµСЂСЃРёСЏ (Р±РµР· Python)
+## Portable build (no Python required)
 
-Р’ РїР°РїРєРµ `dist` РґРѕСЃС‚СѓРїРЅС‹ СЃР±РѕСЂРєРё.
-
-Р РµРєРѕРјРµРЅРґСѓРµРјС‹Р№ Р°СЂС…РёРІ РґР»СЏ РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№:
+Use file from `dist`:
 
 - `PatchCordCalculatorPortable.zip`
 
-РљР°Рє Р·Р°РїСѓСЃС‚РёС‚СЊ:
+How to use:
 
-1. Р Р°СЃРїР°РєСѓР№С‚Рµ Р°СЂС…РёРІ
-2. Р—Р°РїСѓСЃС‚РёС‚Рµ `PatchCordCalculator.exe`
-3. Р”РѕР¶РґРёС‚РµСЃСЊ РѕС‚РєСЂС‹С‚РёСЏ Р±СЂР°СѓР·РµСЂР°
+1. Unzip the archive
+2. Run `PatchCordCalculator.exe`
+3. Wait for the browser to open
 
-## РЎС‚СЂСѓРєС‚СѓСЂР° РїСЂРѕРµРєС‚Р°
+## Project structure
 
-- `cable_calculator.py` - Р»РѕРіРёРєР° СЂР°СЃС‡РµС‚Р°
-- `rack_plan.py` - Р·Р°РіСЂСѓР·РєР° Рё С„РёР»СЊС‚СЂР°С†РёСЏ СЃС‚РѕРµРє РёР· Excel
+- `cable_calculator.py` - calculation logic
+- `rack_plan.py` - rack loading/filtering from Excel
 - `web_api.py` - FastAPI backend
-- `web_interface_v2.html` - РѕСЃРЅРѕРІРЅРѕР№ С„СЂРѕРЅС‚РµРЅРґ
-- `run_app.py` - РµРґРёРЅР°СЏ С‚РѕС‡РєР° Р·Р°РїСѓСЃРєР°
-- `Р·Р°РїСѓСЃС‚РёС‚СЊ.bat` - Р±С‹СЃС‚СЂС‹Р№ Р·Р°РїСѓСЃРє РґР»СЏ Windows
+- `web_interface_v2.html` - main frontend
+- `run_app.py` - unified launcher
+- Windows launcher `.bat` file - quick start on Windows
 
-## РџСЂРёРјРµС‡Р°РЅРёСЏ
+## Notes
 
-- API Рё РІРµР±-СЃРµСЂРІРµСЂ СЂР°Р±РѕС‚Р°СЋС‚ Р»РѕРєР°Р»СЊРЅРѕ (`localhost`)
-- РџСЂРё РїСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРё firewall СЂР°Р·СЂРµС€РёС‚Рµ Р»РѕРєР°Р»СЊРЅС‹Р№ РґРѕСЃС‚СѓРї
+- API and web server run on localhost
+- If firewall warning appears, allow local access
 
-## Р›РёС†РµРЅР·РёСЏ
+## License
 
-Р’РЅСѓС‚СЂРµРЅРЅРµРµ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ.
+Internal use.
