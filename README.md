@@ -38,7 +38,7 @@ python run_app.py
 
 ## Портативная версия
 
-Для пользователей без Python используйте готовую сборку из `dist`:
+Для пользователей без Python используйте готовую сборку из `download`:
 
 - `PatchCordCalculatorPortable.zip`
 

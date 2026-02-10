@@ -348,15 +348,9 @@
 
                         <div class="settings-panel" id="settingsPanel">
                             <h3>Дополнительные настройки</h3>
-                            <div class="form-row">
-                                <div>
-                                    <label for="slack">Запас между стойками (м)</label>
-                                    <input id="slack" type="number" min="0" step="0.1" value="0.5" />
-                                </div>
-                                <div>
-                                    <label for="rounding">Шаг округления (м)</label>
-                                    <input id="rounding" type="number" min="0.1" step="0.1" value="0.5" />
-                                </div>
+                            <div>
+                                <label for="slack">Страховочный запас (см)</label>
+                                <input id="slack" type="number" min="0" step="1" value="40" />
                             </div>
                         </div>
 
@@ -457,11 +451,11 @@
             addSeg(vertical_b_m, "seg-b");
 
             if (!same_rack && slack_added_m > 0.0001) {
-                meta.textContent = `Без запаса: ${raw_total_m.toFixed(
+                meta.textContent = `Без страховочного запаса: ${raw_total_m.toFixed(
                     2,
-                )} м, добавленный запас между стойками: ${slack_added_m.toFixed(2)} м`;
+                )} м, добавленный страховочный запас: ${slack_added_m.toFixed(2)} м`;
             } else {
-                meta.textContent = `Без запаса: ${raw_total_m.toFixed(
+                meta.textContent = `Без страховочного запаса: ${raw_total_m.toFixed(
                     2,
                 )} м, запас не добавлялся`;
             }
@@ -820,7 +814,7 @@
                         document.createTextNode(
                             `+ запас: ${data.slack_added_m.toFixed(
                                 2,
-                            )} м (добавляется только между стойками)`,
+                            )} м (страховочный запас, добавляется только между стойками)`,
                         ),
                     );
                 }
@@ -840,8 +834,7 @@
             const unit2 = parseInt(document.getElementById("unit2").value, 10);
             const hostname1 = document.getElementById("hostname1").value.trim();
             const hostname2 = document.getElementById("hostname2").value.trim();
-            const slack = parseFloat(document.getElementById("slack").value);
-            const rounding = parseFloat(document.getElementById("rounding").value);
+            const safetySlackCm = parseFloat(document.getElementById("slack").value);
 
             if (!rack1 || !rack2) {
                 alert("Выберите обе стойки.");
@@ -858,6 +851,10 @@
                 alert("Номер юнита должен быть от 1 до 50.");
                 return;
             }
+            if (Number.isNaN(safetySlackCm) || safetySlackCm < 0) {
+                alert("Страховочный запас должен быть числом не меньше 0.");
+                return;
+            }
 
             const payload = {
                 server_a: {
@@ -871,8 +868,7 @@
                     hostname: hostname2 || undefined,
                 },
                 config: {
-                    cross_rack_slack_m: slack,
-                    rounding_step_m: rounding,
+                    safety_slack_cm: safetySlackCm,
                 },
             };
 

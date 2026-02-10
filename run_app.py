@@ -149,24 +149,24 @@ def main() -> None:
     project_root = get_runtime_root()
     
     print("=" * 60)
-    print("🚀 Запуск калькулятора патч-кордов")
+    print("Запуск калькулятора патч-кордов")
     print("=" * 60)
     
     # Запускаем API
     try:
         api_mode, api_handle = start_api_server(project_root)
     except Exception as e:
-        print(f"❌ Ошибка запуска API: {e}")
+        print(f"[ERROR] Ошибка запуска API: {e}")
         sys.exit(1)
     
     # Ждём, пока API поднимется
-    print(f"⏳ Ожидание запуска API...")
+    print("Ожидание запуска API...")
     if not wait_for_api(api_mode, api_handle, API_PORT):
         # Если процесс завершился — дадим более понятную подсказку
         if api_mode == "subprocess" and api_handle.poll() is not None:
-            print("❌ API завершился сразу после запуска.")
+            print("[ERROR] API завершился сразу после запуска.")
         else:
-            print("❌ API не запустился за отведённое время.")
+            print("[ERROR] API не запустился за отведённое время.")
 
         print("")
         print("Подсказка: чаще всего это происходит, если не установлены зависимости.")
@@ -181,13 +181,13 @@ def main() -> None:
             api_thread.join(timeout=5)
         sys.exit(1)
     
-    print(f"✅ API запущен на http://localhost:{API_PORT}")
+    print(f"[OK] API запущен на http://localhost:{API_PORT}")
     
     # Запускаем веб-сервер
     try:
         web_server = start_web_server(project_root, WEB_PORT)
     except Exception as e:
-        print(f"❌ Ошибка запуска веб-сервера: {e}")
+        print(f"[ERROR] Ошибка запуска веб-сервера: {e}")
         if api_mode == "subprocess":
             api_handle.terminate()
         else:
@@ -198,12 +198,12 @@ def main() -> None:
     
     # Открываем браузер (используем новую версию фронтенда)
     web_url = f"http://localhost:{WEB_PORT}/web_interface_v2.html"
-    print(f"🌐 Открываю веб-интерфейс: {web_url}")
+    print(f"Открываю веб-интерфейс: {web_url}")
     time.sleep(0.5)  # Небольшая задержка перед открытием браузера
     webbrowser.open(web_url)
     
     print("=" * 60)
-    print("✅ Всё готово! Веб-интерфейс открыт в браузере.")
+    print("[OK] Всё готово! Веб-интерфейс открыт в браузере.")
     print("   Нажмите Ctrl+C для остановки серверов.")
     print("=" * 60)
     
@@ -216,7 +216,7 @@ def main() -> None:
             while api_thread.is_alive():
                 time.sleep(0.5)
     except KeyboardInterrupt:
-        print("\n\n🛑 Остановка серверов...")
+        print("\n\nОстановка серверов...")
         web_server.shutdown()
         if api_mode == "subprocess":
             api_handle.terminate()
@@ -228,7 +228,7 @@ def main() -> None:
             api_server, api_thread = api_handle
             api_server.should_exit = True
             api_thread.join(timeout=5)
-        print("✅ Серверы остановлены")
+        print("[OK] Серверы остановлены")
 
 
 if __name__ == "__main__":

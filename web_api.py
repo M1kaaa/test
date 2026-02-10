@@ -132,8 +132,7 @@ async def calculate_cable_length(request: CalculationRequest):
         "server_a": {"rack_code": "02b03", "unit": 10},
         "server_b": {"rack_code": "02b07", "unit": 40},
         "config": {
-            "cross_rack_slack_m": 0.5,
-            "rounding_step_m": 0.5
+            "safety_slack_cm": 40
         }
     }
     ```
@@ -150,8 +149,39 @@ async def calculate_cable_length(request: CalculationRequest):
         server_a = ServerLocation(rack=rack_a_index, unit=request.server_a.unit)
         server_b = ServerLocation(rack=rack_b_index, unit=request.server_b.unit)
 
-        # Расчёт по ТЗ (конфиг не используется)
-        breakdown = calculate_patch_cord_breakdown(server_a, server_b, None)
+        # Читаем настраиваемый страховочный запас (см) из запроса.
+        # Поддерживаем старый ключ cross_rack_slack_m для совместимости.
+        cfg_dict = request.config or {}
+        safety_slack_cm_raw = cfg_dict.get("safety_slack_cm")
+        if safety_slack_cm_raw is None:
+            cross_rack_slack_m_raw = cfg_dict.get("cross_rack_slack_m")
+            if cross_rack_slack_m_raw is not None:
+                try:
+                    safety_slack_cm_raw = float(cross_rack_slack_m_raw) * 100.0
+                except (TypeError, ValueError):
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Параметр cross_rack_slack_m должен быть числом.",
+                    )
+
+        if safety_slack_cm_raw is None:
+            safety_slack_cm = 40.0
+        else:
+            try:
+                safety_slack_cm = float(safety_slack_cm_raw)
+            except (TypeError, ValueError):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Параметр safety_slack_cm должен быть числом.",
+                )
+            if safety_slack_cm < 0:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Параметр safety_slack_cm не может быть отрицательным.",
+                )
+
+        cfg = DataCenterCableConfig(safety_slack_m=safety_slack_cm / 100.0)
+        breakdown = calculate_patch_cord_breakdown(server_a, server_b, cfg)
 
         return CalculationResponse(
             length_m=breakdown.raw_total_m,

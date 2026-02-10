@@ -3,10 +3,11 @@
 
 Логика:
 - Одна стойка: длина по таблице в зависимости от расстояния в юнитах.
-- Разные стойки: формула (стойка A + кабель-канал + стойка B + 40 см).
+- Разные стойки: формула (стойка A + кабель-канал + стойка B + страховочный запас).
 Итог округляется вверх до ближайшего патч-корда из списка: 1, 1.5, 2, 3, 5, 7.5, 10, 15, 20 м.
-Если разница между рекомендуемым патч-кордом и расчётной длиной ≥ 40 см, от рекомендуемого
-отнимаем 40 см и округляем до ближайшего размера; если результат ≥ расчётной длины — берём его.
+Если разница между рекомендуемым патч-кордом и расчётной длиной >= страховочного запаса,
+от рекомендуемого отнимаем страховочный запас и округляем до ближайшего размера;
+если результат >= расчётной длины — берём его.
 """
 
 from __future__ import annotations
@@ -18,7 +19,7 @@ from typing import List, NamedTuple, Optional
 PATCH_CORD_OPTIONS_M: List[float] = [1.0, 1.5, 2.0, 3.0, 5.0, 7.5, 10.0, 15.0, 20.0]
 
 MAX_UNIT = 50  # последний юнит в стойке
-EXCESS_THRESHOLD_M = 0.4  # если запас ≥ 40 см, пробуем укоротить рекомендацию
+DEFAULT_SAFETY_SLACK_M = 0.4  # страховочный запас по умолчанию (40 см)
 
 
 class ServerLocation(NamedTuple):
@@ -35,10 +36,13 @@ class ServerLocation(NamedTuple):
 @dataclass(frozen=True)
 class DataCenterCableConfig:
     """
-    Конфигурация (оставлена для совместимости API).
-    Расчёт использует фиксированные формулы из ТЗ.
+    Настройки расчёта.
+
+    safety_slack_m:
+      - добавляется к трассе при расчёте между стойками;
+      - используется как порог и величина коррекции при подборе патч-корда.
     """
-    pass
+    safety_slack_m: float = DEFAULT_SAFETY_SLACK_M
 
 
 def _same_rack_length_m(unit_a: int, unit_b: int) -> float:
@@ -145,11 +149,14 @@ def calculate_patch_cord_breakdown(
     """
     Рассчитать длину патч-корда по ТЗ:
     - одна стойка: таблица по расстоянию в юнитах;
-    - разные стойки: стойка A + кабель-канал + стойка B + 40 см.
-    Округление вверх до патч-корда из списка; если запас ≥ 40 см — пробуем (рекоменд − 40 см)
-    с округлением до ближайшего, без уменьшения ниже расчётной длины.
+    - разные стойки: стойка A + кабель-канал + стойка B + страховочный запас.
+    Округление вверх до патч-корда из списка; если запас >= страховочного запаса —
+    пробуем (рекоменд - страховочный запас) с округлением до ближайшего,
+    без уменьшения ниже расчётной длины.
     """
     same_rack = server_a.rack == server_b.rack
+    effective_cfg = cfg if cfg is not None else DataCenterCableConfig()
+    safety_slack_m = max(0.0, float(effective_cfg.safety_slack_m))
 
     if same_rack:
         raw_total = _same_rack_length_m(server_a.unit, server_b.unit)
@@ -161,13 +168,13 @@ def calculate_patch_cord_breakdown(
         vertical_a = _vertical_in_rack_a_m(server_a.unit)
         horizontal = _cable_channel_m(server_a.rack, server_b.rack)
         vertical_b = _vertical_in_rack_b_m(server_b.unit)
-        raw_total = vertical_a + horizontal + vertical_b + 0.4  # +40 см
-        slack_added = 0.4
+        raw_total = vertical_a + horizontal + vertical_b + safety_slack_m
+        slack_added = safety_slack_m
 
     recommended = _round_up_to_patch_cord(raw_total)
     gap = recommended - raw_total
-    if gap >= EXCESS_THRESHOLD_M:
-        candidate = recommended - EXCESS_THRESHOLD_M
+    if safety_slack_m > 0 and gap >= safety_slack_m:
+        candidate = recommended - safety_slack_m
         shorter = _round_to_nearest_patch_cord(candidate)
         if shorter >= raw_total:
             recommended = shorter
